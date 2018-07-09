@@ -25,7 +25,7 @@ REST.prototype.connectMysql = function() {
         host     : 'localhost',
         user     : 'root',
         password : 'jg10dMYS',
-        database : 'Brandefy_app_new',
+        database : 'Brandefy_app',
         debug    :  false
     });
     /*pool.getConnection(function(err,connection){
