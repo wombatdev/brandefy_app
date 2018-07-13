@@ -1,0 +1,64 @@
+{
+    id: 1,
+    name: "Daily Ultra Moisture Lotion",
+    upca: "070501050217",
+    brand_id: 5,
+    brand_name: "CVS Health",
+    retailer_id: 4,
+    r_name: "CVS",
+    product_ingredients: [{
+            id: 1,
+            product_id: 1,
+            ingredient_id: 1,
+            active: false,
+            ingredient: {
+                name: "Coconut Oil"
+            }
+        },
+        {
+            id: 2,
+            product_id: 1,
+            ingredient_id: 2,
+            active: true,
+            ingredient: {
+                name: "Sodium Hydroxide"
+            }
+        },
+        {
+            id: 3,
+            product_id: 1,
+            ingredient_id: 4,
+            active: false,
+            ingredient: {
+                name: "Disodium EDTA"
+            }
+        },
+        {
+            id: 4,
+            product_id: 1,
+            ingredient_id: 5,
+            active: false,
+            ingredient: {
+                name: "Fragrance"
+            }
+        }
+    ],
+    product_categories: [{
+        id: 1,
+        product_id: 1,
+        category_id: 2,
+        category: {
+            name: "Skincare",
+            type_id: 1
+        }
+    }],
+    product_images: [{
+        id: 1,
+        product_id: 1,
+        image_link: "https://static1.squarespace.com/static/585401d920099e49d4583882/t/5b1d571a1ae6cfcbab7c8741/1528649501220/050428305386_front.JPG",
+        product_image_type_id: 1,
+        product_image_type: {
+            image_type: "front"
+        }
+    }]
+},
