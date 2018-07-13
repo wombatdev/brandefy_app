@@ -82,6 +82,7 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
     // ####################################  RETAILERS  ####################################
 
     router.get("/retailers",function(req,res){
+        // console.log(req.route.path, Object.keys(req.route.methods));
         var query = " SELECT rb.id,rb.r_name FROM retailers rb ORDER BY rb.id;";
         submitQuery(query,"retailers",res);
     });
@@ -114,18 +115,18 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
         }
     });
 
-    router.delete("/retailers/:id",function(req,res){
-        var verified = authCheck(req.query.user, req.query.pw);
-        if (verified===true) {
-            delete req.body.user;
-            delete req.body.pw;
-            var query = `DELETE FROM retailers WHERE id=${req.params.id};`;
-            submitQuery(query,"retailers", res);
-        } else {
-            console.log("Failed authentication.");
-            res.json({"Error" : true, "Message" : "Failed authentication"});
-        }
-    });
+    // router.delete("/retailers/:id",function(req,res){
+    //     var verified = authCheck(req.query.user, req.query.pw);
+    //     if (verified===true) {
+    //         delete req.body.user;
+    //         delete req.body.pw;
+    //         var query = `DELETE FROM retailers WHERE id=${req.params.id};`;
+    //         submitQuery(query,"retailers", res);
+    //     } else {
+    //         console.log("Failed authentication.");
+    //         res.json({"Error" : true, "Message" : "Failed authentication"});
+    //     }
+    // });
 
     // ####################################  BRANDS  ####################################
 
@@ -162,85 +163,79 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
         }
     });
 
-    router.delete("/brands/:id",function(req,res){
-        var verified = authCheck(req.query.user, req.query.pw);
-        if (verified===true) {
-            delete req.body.user;
-            delete req.body.pw;
-            var query = `DELETE FROM brands WHERE bid=${req.params.id};`;
-            submitQuery(query,"brands", res);
-        } else {
-            console.log("Failed authentication.");
-            res.json({"Error" : true, "Message" : "Failed authentication"});
-        }
-    });
+    // router.delete("/brands/:id",function(req,res){
+    //     var verified = authCheck(req.query.user, req.query.pw);
+    //     if (verified===true) {
+    //         delete req.body.user;
+    //         delete req.body.pw;
+    //         var query = `DELETE FROM brands WHERE bid=${req.params.id};`;
+    //         submitQuery(query,"brands", res);
+    //     } else {
+    //         console.log("Failed authentication.");
+    //         res.json({"Error" : true, "Message" : "Failed authentication"});
+    //     }
+    // });
 
     // ####################################  PRODUCTS  ####################################
 
     router.get("/product_data/:id",function(req,res){
-        var query = ` SELECT JSON_OBJECT( \
-        'id', p.id, \
-        'name', p.p_name, \
-        'upca', p.upca, \
-        'brand', (SELECT CAST(
-                GROUP_CONCAT(
+        var query = ` SELECT JSON_OBJECT(
+        'id', p.id,
+        'name', p.p_name,
+        'upca', p.upca,
+        'brand', (SELECT CAST(GROUP_CONCAT(
                   JSON_OBJECT(
                       'bid',br.bid,'b_name',br.b_name))
-                  AS JSON) FROM brands br WHERE p.brand_id = br.bid), \
-          'retailer', (SELECT CAST(
-                  GROUP_CONCAT(
-                    JSON_OBJECT(
-                        'retail_id',br.retail_id, 'r_name', rb.r_name))
-                    AS JSON) FROM brands br, retailers rb WHERE p.brand_id = br.bid AND br.retail_id=rb.id), \
-        'image', (SELECT CAST(
-                GROUP_CONCAT(
+                  AS JSON) FROM brands br WHERE p.brand_id = br.bid),
+        'retailer', (SELECT CAST(GROUP_CONCAT(
+                     JSON_OBJECT(
+                         'retail_id',br.retail_id, 'r_name', rb.r_name))
+                     AS JSON) FROM brands br, retailers rb WHERE p.brand_id = br.bid AND br.retail_id=rb.id),
+        'image', (SELECT CAST(GROUP_CONCAT(
                   JSON_OBJECT(
                       'image_id',img.id,'image_link',img.image_link))
-                  AS JSON) FROM product_images img WHERE img.p_id = p.id), \
-        'cat1', (SELECT CAST(
-                  GROUP_CONCAT(
-                    JSON_OBJECT(
-                        'prodCat_id',prodCat.id,'category', (SELECT CAST(GROUP_CONCAT(JSON_OBJECT('id',c.id,'c_name',c.c_name,'type_id',c.type_id)) AS JSON) FROM categories c WHERE prodCat.c_id=c.id) ))
-                    AS JSON) FROM product_categories prodCat, categories c WHERE prodCat.p_id = p.id AND prodCat.c_id=c.id AND c.type_id=1) \
-        ) AS JSON \
-        FROM products AS p \
-        JOIN brands AS br \
-            ON p.brand_id=br.bid \
-        LEFT JOIN retailers AS rb \
-            ON br.retail_id=rb.id \
-        WHERE p.id=${req.params.id} \
+                  AS JSON) FROM product_images img WHERE img.p_id = p.id),
+        'cat1', (SELECT CAST(GROUP_CONCAT(
+                 JSON_OBJECT(
+                     'prodCat_id',prodCat.id,'category', (SELECT CAST(GROUP_CONCAT(JSON_OBJECT('id',c.id,'c_name',c.c_name,'type_id',c.type_id)) AS JSON) FROM categories c WHERE prodCat.c_id=c.id) ))
+                 AS JSON) FROM product_categories prodCat, categories c WHERE prodCat.p_id = p.id AND prodCat.c_id=c.id AND c.type_id=1)
+        ) AS JSON
+        FROM products AS p
+        JOIN brands AS br ON p.brand_id=br.bid
+        LEFT JOIN retailers AS rb ON br.retail_id=rb.id
+        WHERE p.id=${req.params.id}
         ORDER BY p.id;`;
         submitQuery(query,"products",res);
     });
 
     router.get("/product_data",function(req,res){
-        var query = " SELECT p.id, p.p_name AS name, p.upca, p.brand_id,br.b_name,br.id AS retailer_id, br.r_name, cat1.c_name AS cat1_name, cat2.categories, img.image_link, ing.ingredients \
-        FROM products p \
-        JOIN (SELECT b.bid,b.b_name,rb.id,rb.r_name \
-            FROM brands b \
-            LEFT JOIN retailers rb \
-            ON b.retail_id=rb.id) br \
-            ON br.bid=p.brand_id \
-        LEFT JOIN (SELECT prodIng.p_id, GROUP_CONCAT(i.i_name ORDER BY i.id SEPARATOR ', ') AS ingredients \
-            FROM product_ingredients prodIng, ingredients i \
-            WHERE prodIng.i_id=i.id \
-            GROUP BY prodIng.p_id) ing \
-            ON ing.p_id=p.id \
-        LEFT JOIN (SELECT prodCat.p_id, c.c_name \
-            FROM product_categories prodCat, categories c \
-            WHERE c.type_id=1 \
-            AND prodCat.c_id=c.id) cat1 \
-            ON cat1.p_id=p.id \
-        LEFT JOIN (SELECT prodCat.p_id, GROUP_CONCAT(c.c_name ORDER BY c.id SEPARATOR ', ') AS categories \
-            FROM product_categories prodCat, categories c \
-            WHERE prodCat.c_id=c.id AND c.type_id=2 \
-            GROUP BY prodCat.p_id) cat2 \
-            ON cat2.p_id=p.id \
-        LEFT JOIN (SELECT image.p_id, image.image_link \
-            FROM product_images image \
-            WHERE image.primary_link=1) img \
-            ON img.p_id=p.id \
-        ORDER BY p.id;";
+        var query = ` SELECT p.id, p.p_name AS name, p.upca, p.brand_id,br.b_name,br.id AS retailer_id, br.r_name, cat1.c_name AS cat1_name, cat2.categories, img.image_link, ing.ingredients
+        FROM products p
+        JOIN (SELECT b.bid,b.b_name,rb.id,rb.r_name
+            FROM brands b
+            LEFT JOIN retailers rb
+            ON b.retail_id=rb.id) br
+            ON br.bid=p.brand_id
+        LEFT JOIN (SELECT prodIng.p_id, GROUP_CONCAT(i.i_name ORDER BY i.id SEPARATOR ', ') AS ingredients
+            FROM product_ingredients prodIng, ingredients i
+            WHERE prodIng.i_id=i.id
+            GROUP BY prodIng.p_id) ing
+            ON ing.p_id=p.id
+        LEFT JOIN (SELECT prodCat.p_id, c.c_name
+            FROM product_categories prodCat, categories c
+            WHERE c.type_id=1
+            AND prodCat.c_id=c.id) cat1
+            ON cat1.p_id=p.id
+        LEFT JOIN (SELECT prodCat.p_id, GROUP_CONCAT(c.c_name ORDER BY c.id SEPARATOR ', ') AS categories
+            FROM product_categories prodCat, categories c
+            WHERE prodCat.c_id=c.id AND c.type_id=2
+            GROUP BY prodCat.p_id) cat2
+            ON cat2.p_id=p.id
+        LEFT JOIN (SELECT image.p_id, image.image_link
+            FROM product_images image
+            WHERE image.primary_link=1) img
+            ON img.p_id=p.id
+        ORDER BY p.id;`;
         submitQuery(query,"products",res);
         // var query = `SELECT p.id,p.UPCA,p.p_name,br.*,pri.product_ingredients, pimg.product_images, cat1.primary_category, cat2.secondary_categories
         //  FROM products p JOIN (SELECT b.bid,b.b_name,r.r_name FROM brands b JOIN retailers r on b.retail_id=r.id) br ON br.bid=p.brand_id
@@ -270,7 +265,7 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
         //  AS JSON) AS secondary_categories, p_id FROM product_categories pc JOIN categories c ON pc.c_id=c.id WHERE c.type_id=1 GROUP BY pc.p_id) AS cat2 ON cat2.p_id=p.id;`;
         //  var query = mysql.format(query);
         //  connection.query(query, function(err, result){
-        //      if(err) { 
+        //      if(err) {
         //          res.json({"error" : true, "code" : `Data not saved. There was a MySQL error: ${err.code}`});
         //      } else {
         //          result.map(function(row) {
@@ -408,53 +403,62 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
         }
     });
 
-    router.delete("/product_data/:id",function(req,res){
-        var verified = authCheck(req.query.user, req.query.pw);
-        if (verified===true) {
-            delete req.body.user;
-            delete req.body.pw;
-            var query = `DELETE FROM product_categories WHERE p_id=${req.params.id};`;
-            var query = mysql.format(query);
-            connection.query(query, function(err, result){
-                if(err) {
-                    res.json({"error" : true, "code" : `Data not saved. There was a MySQL error: ${err.code}`});
-                } else {
-                    console.log(result.affectedRows + ` product_categories record(s) deleted`);
-                    var query = `DELETE FROM product_ingredients WHERE p_id=${req.params.id};`;
-                    var query = mysql.format(query);
-                    connection.query(query, function(err, result){
-                        if(err) {
-                            res.json({"error" : true, "code" : `Data not saved. There was a MySQL error: ${err.code}`});
-                        } else {
-                            console.log(result.affectedRows + ` product_ingredients record(s) deleted`);
-                            var query = `DELETE FROM product_comp WHERE brand_pid=${req.params.id} OR generic_pid=${req.params.id};`;
-                            var query = mysql.format(query);
-                            connection.query(query, function(err, result){
-                                if(err) {
-                                    res.json({"error" : true, "code" : `Data not saved. There was a MySQL error: ${err.code}`});
-                                } else {
-                                    console.log(result.affectedRows + ` comparison record(s) deleted`);
-                                    var query = `DELETE FROM products WHERE id=${req.params.id};`;
-                                    var query = mysql.format(query);
-                                    connection.query(query, function(err, result){
-                                        if(err) {
-                                            res.json({"error" : true, "code" : `Data not saved. There was a MySQL error: ${err.code}`});
-                                        } else {
-                                            console.log(result.affectedRows + ` product record(s) deleted`);
-                                            res.send(result);
-                                        }
-                                    });
-                                }
-                            });
-                        }
-                    });
-                }
-            });
-        } else {
-            console.log("Failed authentication.");
-            res.json({"Error" : true, "Message" : "Failed authentication"});
-        }
-    });
+    // router.delete("/product_data/:id",function(req,res){
+    //     var verified = authCheck(req.query.user, req.query.pw);
+    //     if (verified===true) {
+    //         delete req.body.user;
+    //         delete req.body.pw;
+    //         var query = `DELETE FROM product_categories WHERE p_id=${req.params.id};`;
+    //         var query = mysql.format(query);
+    //         connection.query(query, function(err, result){
+    //             if(err) {
+    //                 res.json({"error" : true, "code" : `Data not saved. There was a MySQL error: ${err.code}`});
+    //             } else {
+    //                 console.log(result.affectedRows + ` product_categories record(s) deleted`);
+    //                 var query = `DELETE FROM product_ingredients WHERE p_id=${req.params.id};`;
+    //                 var query = mysql.format(query);
+    //                 connection.query(query, function(err, result){
+    //                     if(err) {
+    //                         res.json({"error" : true, "code" : `Data not saved. There was a MySQL error: ${err.code}`});
+    //                     } else {
+    //                         console.log(result.affectedRows + ` product_ingredients record(s) deleted`);
+    //                         var query = `DELETE FROM product_comp WHERE brand_pid=${req.params.id} OR generic_pid=${req.params.id};`;
+    //                         var query = mysql.format(query);
+    //                         connection.query(query, function(err, result){
+    //                             if(err) {
+    //                                 res.json({"error" : true, "code" : `Data not saved. There was a MySQL error: ${err.code}`});
+    //                             } else {
+    //                                 console.log(result.affectedRows + ` comparison record(s) deleted`);
+    //                                 var query = `DELETE FROM product_images WHERE p_id=${req.params.id};`;
+    //                                 var query = mysql.format(query);
+    //                                 connection.query(query, function(err, result){
+    //                                     if(err) {
+    //                                         res.json({"error" : true, "code" : `Data not saved. There was a MySQL error: ${err.code}`});
+    //                                     } else {
+    //                                         console.log(result.affectedRows + ` product_images record(s) deleted`);
+    //                                         var query = `DELETE FROM products WHERE id=${req.params.id};`;
+    //                                         var query = mysql.format(query);
+    //                                         connection.query(query, function(err, result){
+    //                                             if(err) {
+    //                                                 res.json({"error" : true, "code" : `Data not saved. There was a MySQL error: ${err.code}`});
+    //                                             } else {
+    //                                                 console.log(result.affectedRows + ` product record(s) deleted`);
+    //                                                 res.send(result);
+    //                                             }
+    //                                         });
+    //                                     }
+    //                                 });
+    //                             }
+    //                         });
+    //                     }
+    //                 });
+    //             }
+    //         });
+    //     } else {
+    //         console.log("Failed authentication.");
+    //         res.json({"Error" : true, "Message" : "Failed authentication"});
+    //     }
+    // });
 
     // ####################################  INGREDIENTS  ####################################
 
@@ -491,55 +495,55 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
          }
      });
 
-     router.delete("/ingredients/:id",function(req,res){
-         var verified = authCheck(req.query.user, req.query.pw);
-         if (verified===true) {
-             delete req.body.user;
-             delete req.body.pw;
-             var query = `DELETE FROM ingredients WHERE id=${req.params.id};`;
-             var query = mysql.format(query);
-             connection.query(query, function(err, result){
-                 if(err) {
-                     res.json({"error" : true, "code" : `Data not saved. There was a MySQL error: ${err.code}`});
-                 } else {
-                     console.log(result.affectedRows + ` ingredients record(s) deleted`);
-                     var query = `DELETE FROM product_ingredients WHERE i_id=${req.params.id};`;
-                     var query = mysql.format(query);
-                     connection.query(query, function(err, result){
-                         if(err) {
-                             res.json({"error" : true, "code" : `Data not saved. There was a MySQL error: ${err.code}`});
-                         } else {
-                             console.log(result.affectedRows + ` product_ingredients record(s) deleted`);
-                             res.send(result);
-                         }
-                     });
-                 }
-             });
-         } else {
-             console.log("Failed authentication.");
-             res.json({"Error" : true, "Message" : "Failed authentication"});
-         }
-     });
+     // router.delete("/ingredients/:id",function(req,res){
+     //     var verified = authCheck(req.query.user, req.query.pw);
+     //     if (verified===true) {
+     //         delete req.body.user;
+     //         delete req.body.pw;
+     //         var query = `DELETE FROM ingredients WHERE id=${req.params.id};`;
+     //         var query = mysql.format(query);
+     //         connection.query(query, function(err, result){
+     //             if(err) {
+     //                 res.json({"error" : true, "code" : `Data not saved. There was a MySQL error: ${err.code}`});
+     //             } else {
+     //                 console.log(result.affectedRows + ` ingredients record(s) deleted`);
+     //                 var query = `DELETE FROM product_ingredients WHERE i_id=${req.params.id};`;
+     //                 var query = mysql.format(query);
+     //                 connection.query(query, function(err, result){
+     //                     if(err) {
+     //                         res.json({"error" : true, "code" : `Data not saved. There was a MySQL error: ${err.code}`});
+     //                     } else {
+     //                         console.log(result.affectedRows + ` product_ingredients record(s) deleted`);
+     //                         res.send(result);
+     //                     }
+     //                 });
+     //             }
+     //         });
+     //     } else {
+     //         console.log("Failed authentication.");
+     //         res.json({"Error" : true, "Message" : "Failed authentication"});
+     //     }
+     // });
 
     // ####################################  PRODUCT INGREDIENTS  ####################################
 
     router.get("/product_ingredients/:id",function(req,res){
-        var query = ` SELECT JSON_OBJECT( \
-        'prodIng_id', prodIng.id, \
+        var query = ` SELECT JSON_OBJECT(
+        'prodIng_id', prodIng.id,
         'ingredient', JSON_OBJECT(
-                      'id',i.id,'i_name',i.i_name,'is_sulfate',i.issulfate, 'is_paraben', i.isparaben)) AS JSON \
-                  FROM product_ingredients prodIng, ingredients i WHERE prodIng.i_id = i.id AND prodIng.p_id = ${req.params.id} \
-                  GROUP BY prodIng.id \
-                  ORDER BY prodIng.id;`;
+                      'id',i.id,'i_name',i.i_name,'is_sulfate',i.issulfate, 'is_paraben', i.isparaben)
+                      ) AS JSON
+        FROM product_ingredients prodIng, ingredients i WHERE prodIng.i_id = i.id AND prodIng.p_id = ${req.params.id}
+        GROUP BY prodIng.id
+        ORDER BY prodIng.id;`;
         submitQuery(query,"product_ingredients",res);
     });
 
     router.get("/product_ingredients",function(req,res){
-        var query = " SELECT prodIng.id, prodIng.p_id, i.id, i.i_name, prodIng.active \
-        FROM product_ingredients prodIng \
-        LEFT JOIN ingredients i \
-        ON prodIng.i_id=i.id \
-        ORDER BY i.id;";
+        var query = ` SELECT prodIng.id, prodIng.p_id, i.id, i.i_name, prodIng.active FROM product_ingredients prodIng
+        LEFT JOIN ingredients i
+        ON prodIng.i_id=i.id
+        ORDER BY i.id;`;
         submitQuery(query,"product_ingredients",res);
     });
 
@@ -575,14 +579,15 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
     // ####################################  CATEGORIES  ####################################
 
     router.get("/categories",function(req,res){
-        var query = ` SELECT cat.id,cat.c_name,cat.type_id,catType.level,catRels.id as rel_id, parent.parent_cid,parent.c_name AS parent_name FROM categories cat
-                    LEFT JOIN category_types catType ON cat.type_id=catType.id
-                    LEFT JOIN category_rels catRels ON cat.id=catRels.child_cid
-                    LEFT JOIN (SELECT catRels.child_cid, catRels.parent_cid, c.c_name
-                        FROM category_rels catRels, categories c
-                        WHERE catRels.parent_cid=c.id) parent
-                        ON parent.child_cid=cat.id
-                    ORDER BY cat.id;`;
+        var query = ` SELECT cat.id,cat.c_name,cat.type_id,catType.level,catRels.id as rel_id, parent.parent_cid,parent.c_name AS parent_name
+        FROM categories cat
+        LEFT JOIN category_types catType ON cat.type_id=catType.id
+        LEFT JOIN category_rels catRels ON cat.id=catRels.child_cid
+        LEFT JOIN (SELECT catRels.child_cid, catRels.parent_cid, c.c_name
+            FROM category_rels catRels, categories c
+            WHERE catRels.parent_cid=c.id) parent
+            ON parent.child_cid=cat.id
+        ORDER BY cat.id;`;
         submitQuery(query,"categories",res);
     });
 
@@ -653,8 +658,8 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
                             }
                         });
                     }
-                    res.send(result);
                 }
+                res.send(result);
             });
         } else {
             console.log("Failed authentication.");
@@ -662,44 +667,44 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
         }
     });
 
-    router.delete("/categories/:id",function(req,res){
-        var verified = authCheck(req.query.user, req.query.pw);
-        if (verified===true) {
-            delete req.body.user;
-            delete req.body.pw;
-            var query = `DELETE FROM product_categories WHERE c_id=${req.params.id};`;
-            var query = mysql.format(query);
-            connection.query(query, function(err, result){
-                if(err) {
-                    res.json({"error" : true, "code" : `Data not saved. There was a MySQL error: ${err.code}`});
-                } else {
-                    console.log(result.affectedRows + ` product_categories record(s) deleted`);
-                    var query = `DELETE FROM category_rels WHERE parent_cid=${req.params.id} OR child_cid=${req.params.id};`;
-                    var query = mysql.format(query);
-                    connection.query(query, function(err, result){
-                        if(err) {
-                            res.json({"error" : true, "code" : `Data not saved. There was a MySQL error: ${err.code}`});
-                        } else {
-                            console.log(result.affectedRows + ` category_rels record(s) deleted`);
-                            var query = `DELETE FROM categories WHERE id=${req.params.id};`;
-                            var query = mysql.format(query);
-                            connection.query(query, function(err, result){
-                                if(err) {
-                                    res.json({"error" : true, "code" : `Data not saved. There was a MySQL error: ${err.code}`});
-                                } else {
-                                    console.log(result.affectedRows + ` categories record(s) deleted`);
-                                    res.send(result);
-                                }
-                            });
-                        }
-                    });
-                }
-            });
-        } else {
-            console.log("Failed authentication.");
-            res.json({"Error" : true, "Message" : "Failed authentication"});
-        }
-    });
+    // router.delete("/categories/:id",function(req,res){
+    //     var verified = authCheck(req.query.user, req.query.pw);
+    //     if (verified===true) {
+    //         delete req.body.user;
+    //         delete req.body.pw;
+    //         var query = `DELETE FROM product_categories WHERE c_id=${req.params.id};`;
+    //         var query = mysql.format(query);
+    //         connection.query(query, function(err, result){
+    //             if(err) {
+    //                 res.json({"error" : true, "code" : `Data not saved. There was a MySQL error: ${err.code}`});
+    //             } else {
+    //                 console.log(result.affectedRows + ` product_categories record(s) deleted`);
+    //                 var query = `DELETE FROM category_rels WHERE parent_cid=${req.params.id} OR child_cid=${req.params.id};`;
+    //                 var query = mysql.format(query);
+    //                 connection.query(query, function(err, result){
+    //                     if(err) {
+    //                         res.json({"error" : true, "code" : `Data not saved. There was a MySQL error: ${err.code}`});
+    //                     } else {
+    //                         console.log(result.affectedRows + ` category_rels record(s) deleted`);
+    //                         var query = `DELETE FROM categories WHERE id=${req.params.id};`;
+    //                         var query = mysql.format(query);
+    //                         connection.query(query, function(err, result){
+    //                             if(err) {
+    //                                 res.json({"error" : true, "code" : `Data not saved. There was a MySQL error: ${err.code}`});
+    //                             } else {
+    //                                 console.log(result.affectedRows + ` categories record(s) deleted`);
+    //                                 res.send(result);
+    //                             }
+    //                         });
+    //                     }
+    //                 });
+    //             }
+    //         });
+    //     } else {
+    //         console.log("Failed authentication.");
+    //         res.json({"Error" : true, "Message" : "Failed authentication"});
+    //     }
+    // });
 
     // ####################################  CATEGORY TYPES  ####################################
 
@@ -711,13 +716,15 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
     // ####################################  PRODUCT CATEGORIES  ####################################
 
     router.get("/product_categories/:id",function(req,res){
-        var query = ` SELECT JSON_OBJECT( \
-        'prodCat_id', prodCat.id, \
+        var query = ` SELECT JSON_OBJECT(
+        'prodCat_id', prodCat.id,
         'category', JSON_OBJECT(
-                      'id',c.id,'c_name',c.c_name,'type_id',c.type_id)) AS JSON \
-                  FROM product_categories prodCat, categories c WHERE prodCat.c_id = c.id AND prodCat.p_id = ${req.params.id} AND c.type_id=2 \
-                  GROUP BY prodCat.id \
-                  ORDER BY prodCat.id;`;
+                        'id',c.id,'c_name',c.c_name,'type_id',c.type_id)
+                    ) AS JSON
+        FROM product_categories prodCat, categories c
+        WHERE prodCat.c_id = c.id AND prodCat.p_id = ${req.params.id} AND c.type_id=2
+        GROUP BY prodCat.id
+        ORDER BY prodCat.id;`;
         submitQuery(query,"product_categories",res);
     });
 
@@ -793,18 +800,19 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
     // ####################################  COMPS  ####################################
 
     router.get("/comparisons",function(req,res){
-        var query = " SELECT pc.id,pc.brand_pid,p1.p_name AS brand_pname,br1.bid AS brand_bid, br1.b_name AS brand_bname,pc.generic_pid,p2.p_name AS generic_pname, br2.bid AS generic_bid, br2.b_name AS generic_bname,br2.r_name,pc.overall_similarity AS similarity_score,pc.ingredient_match,pc.b_review \
-        FROM product_comp pc \
-        JOIN products p1 on p1.id=pc.brand_pid \
-        JOIN products p2 on p2.id=pc.generic_pid \
-        JOIN (SELECT b.bid,b.b_name,rb.id, rb.r_name \
-            FROM brands b \
-            LEFT JOIN retailers rb \
-            ON b.retail_id=rb.id) br1 \
-        ON br1.bid=p1.brand_id \
-        JOIN (SELECT b.bid,b.b_name,rb.id, rb.r_name \
-        FROM brands b LEFT JOIN retailers rb ON b.retail_id=rb.id) br2 ON br2.bid=p2.brand_id \
-        ORDER BY pc.id;";
+        var query = ` SELECT pc.id,pc.brand_pid,p1.p_name AS brand_pname,br1.bid AS brand_bid, br1.b_name AS brand_bname,pc.generic_pid,p2.p_name AS generic_pname, br2.bid AS generic_bid, br2.b_name AS generic_bname,br2.r_name,pc.overall_similarity AS similarity_score,pc.ingredient_match,pc.b_review
+        FROM product_comp pc
+        JOIN products p1 on p1.id=pc.brand_pid
+        JOIN products p2 on p2.id=pc.generic_pid
+        JOIN (SELECT b.bid,b.b_name,rb.id, rb.r_name FROM brands b
+            LEFT JOIN retailers rb
+            ON b.retail_id=rb.id) br1
+        ON br1.bid=p1.brand_id
+        JOIN (SELECT b.bid,b.b_name,rb.id, rb.r_name FROM brands b
+            LEFT JOIN retailers rb
+            ON b.retail_id=rb.id) br2
+        ON br2.bid=p2.brand_id
+        ORDER BY pc.id;`;
         submitQuery(query,"comparisons",res);
     });
 
@@ -828,27 +836,26 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
             delete req.body.user;
             delete req.body.pw;
             var parameters = setPostParameters(req,res);
-            // hard code primary link as 1
             var query = `INSERT INTO product_comp(brand_pid, generic_pid, overall_similarity, ingredient_match, b_review) values(${parameters});`;
-            submitQuery(query,"product_comp",res);
+            submitQuery(query,"comparisons",res);
         } else {
             console.log("Failed authentication.");
             res.json({"Error" : true, "Message" : "Failed authentication"});
         }
     });
 
-    router.delete("/comparisons/:id",function(req,res){
-        var verified = authCheck(req.query.user, req.query.pw);
-        if (verified===true) {
-            delete req.body.user;
-            delete req.body.pw;
-            var query = `DELETE FROM product_comp WHERE id=${req.params.id};`;
-            submitQuery(query,"comparisons", res);
-        } else {
-            console.log("Failed authentication.");
-            res.json({"Error" : true, "Message" : "Failed authentication"});
-        }
-    });
+    // router.delete("/comparisons/:id",function(req,res){
+    //     var verified = authCheck(req.query.user, req.query.pw);
+    //     if (verified===true) {
+    //         delete req.body.user;
+    //         delete req.body.pw;
+    //         var query = `DELETE FROM product_comp WHERE id=${req.params.id};`;
+    //         submitQuery(query,"comparisons", res);
+    //     } else {
+    //         console.log("Failed authentication.");
+    //         res.json({"Error" : true, "Message" : "Failed authentication"});
+    //     }
+    // });
 
     // ####################################  OTHER  ####################################
 
