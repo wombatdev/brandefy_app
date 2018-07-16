@@ -1,0 +1,4 @@
+# START [app_yaml]
+env: development
+runtime: nodejs
+vm: true
