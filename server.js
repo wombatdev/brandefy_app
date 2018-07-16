@@ -12,12 +12,12 @@ function REST(){
 };
 
 // James add
-app.use(function(req, res, next) {
-    res.header("Access-Control-Allow-Origin", "http://localhost:3001");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
-    next();
-});
+// app.use(function(req, res, next) {
+//     res.header("Access-Control-Allow-Origin", "http://localhost:3001");
+//     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+//     res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
+//     next();
+// });
 
 REST.prototype.connectMysql = function() {
     var self = this;
@@ -50,12 +50,12 @@ REST.prototype.configureExpress = function(connection) {
       self.startServer();
 }
 
-var port = process.env.PORT;
+var port = (process.env.PORT ? process.env.PORT : 8080);
 app.set('port',port);
 
 REST.prototype.startServer = function() {
     if (!module.parent) {
-      app.listen(8080,function(){
+      app.listen(port,function(){
           console.log("All right ! I am alive at Port 8080.");
       });
     }
