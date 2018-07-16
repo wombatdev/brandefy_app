@@ -4,6 +4,7 @@ var bodyParser  = require("body-parser");
 var md5 = require('MD5');
 var rest = require("./REST.js");
 var app  = express();
+require('dotenv').config();
 
 function REST(){
     var self = this;
@@ -11,21 +12,21 @@ function REST(){
 };
 
 // James add
-// app.use(function(req, res, next) {
-//     res.header("Access-Control-Allow-Origin", "http://localhost:3001");
-//     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//     res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
-//     next();
-// });
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "http://localhost:3001");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
+    next();
+});
 
 REST.prototype.connectMysql = function() {
     var self = this;
     var pool      =    mysql.createPool({
         connectionLimit : 100,
-        host     : 'localhost',
-        user     : 'root',
-        password : 'jg10dMYS',
-        database : 'Brandefy_app',
+        host     : process.env.DB_HOST,
+        user     : process.env.DB_USER,
+        password : process.env.DB_PASSWORD,
+        database : process.env.DB_NAME,
         debug    :  false
     });
     /*pool.getConnection(function(err,connection){
@@ -48,6 +49,9 @@ REST.prototype.configureExpress = function(connection) {
       var rest_router = new rest(router,connection,md5);
       self.startServer();
 }
+
+var port = process.env.PORT;
+app.set('port',port);
 
 REST.prototype.startServer = function() {
     if (!module.parent) {
