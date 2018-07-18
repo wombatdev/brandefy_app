@@ -82,8 +82,6 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
     //### others from old services that power the ios app comments will not work as the ios app uses the requests with the term review#########
 
     router.get("/searchproducts",function(req,res){
-        console.log(req);
-        console.log("BREAK");
         var query = " select pc.id, concat(b1.b_name,' vs ',b2.b_name) as title1, concat(p1.p_name,' vs ',p2.p_name) as title2, r.r_name as retailer_name from product_comp pc  join products p1 on p1.id=pc.brand_pid join products p2 on p2.id=pc.generic_pid join brands b1 on b1.bid=p1.brand_id join brands b2 on p2.brand_id=b2.bid join retailers r on b2.retail_id=r.id";
         query = mysql.format(query);
         connection.query(query,function(err,rows){
@@ -124,7 +122,7 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
 
     router.post("/review",function(req,res){
         console.log(req.body);
-        var query = "INSERT INTO product_reviews(p_id,uname,email,review,date_added) VALUES (?,?,?,?,now())";
+        var query = "INSERT INTO product_reviews(p_id,u_id,email,review,date_added) VALUES (?,1,?,?,now())";
         var table = [req.body.pid,req.body.name,req.body.email,req.body.review];
         query = mysql.format(query,table);
         connection.query(query,function(err,rows){
