@@ -973,8 +973,8 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
         submitQuery(query,"subscribers",res);
     });
 
-    router.get("/product_review_requests",function(req,res){
-        var query = `SELECT prr.id,prr.product_name,prr.store_name,prr.email,if(prr.can_help=1,1,0) AS can_help,prr.date_added from product_review_requests prr ORDER BY prr.id;`;
+    router.get("/product_review_request",function(req,res){
+        var query = `SELECT prr.id,prr.product_name,prr.store_name,prr.email,if(prr.can_help=1,1,0) AS can_help,prr.date_added from product_review_request prr ORDER BY prr.id;`;
         submitQuery(query,"review_requests",res);
     });
 
