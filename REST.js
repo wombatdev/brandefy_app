@@ -79,6 +79,109 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
         });
     }
 
+    //### others from old services that power the ios app comments will not work as the ios app uses the requests with the term review#########
+
+    router.get("/searchproducts",function(req,res){
+        console.log(req.body);
+        var query = " select pc.id, concat(b1.b_name,' vs ',b2.b_name) as title1, concat(p1.p_name,' vs ',p2.p_name) as title2, r.r_name from product_comp pc  join products p1 on p1.id=pc.brand_pid join products p2 on p2.id=pc.generic_pid join brands b1 on b1.bid=p1.brand_id join brands b2 on p2.brand_id=b2.bid join retailers r on b2.retail_id=r.id";
+        query = mysql.format(query);
+        connection.query(query,function(err,rows){
+            if(err) {
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+
+                res.json({"Error" : false, "Message" : "Success", "Search_Results" : rows});
+            }
+        });
+    });
+
+    router.get("/products/:product_id",function(req,res){
+        var query = "select  distinct pc.id, b1.b_name as brand_name,b2.b_name as retailer_brand, concat(p1.p_name,' vs ',p2.p_name) as title2,r.r_name,pi.image_link, pc.overall_similarity,pc.ingredient_match,pc.b_review, (select count(pr.id) from product_reviews pr where pr.p_id=pc.id)as review_count from product_comp pc join products p1 on p1.id=pc.brand_pid join products p2 on p2.id=pc.generic_pid join product_images pi on pi.p_id=p2.id and pi.primary_link=1 join brands b1 on b1.bid=p1.brand_id join brands b2 on b2.bid=p2.brand_id join retailers r on b2.retail_id=r.id where pc.id =?";
+        var table = [req.params.product_id];
+        query = mysql.format(query,table);
+        connection.query(query,function(err,rows){
+            if(err) {
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json({"Error" : false, "Message" : "Success", "product_info" : rows});
+            }
+        });
+    });
+
+     router.get("/reviews/:product_id",function(req,res){
+        var query = " select pr.p_id, pr.uname, pr.review, DATE_FORMAT(date_added,'%m/%d/%Y') from product_reviews pr where p_id=?";
+        var table = [req.params.product_id];
+        query = mysql.format(query,table);
+        connection.query(query,function(err,rows){
+            if(err) {
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json({"Error" : false, "Message" : "Success", "Reviews" : rows});
+            }
+        });
+    });
+
+    router.post("/review",function(req,res){
+        console.log(req.body);
+        var query = "INSERT INTO product_reviews(p_id,uname,email,review,date_added) VALUES (?,?,?,?,now())";
+        var table = [req.body.pid,req.body.name,req.body.email,req.body.review];
+        query = mysql.format(query,table);
+        connection.query(query,function(err,rows){
+            if(err) {
+                console.log(err);
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json({"Error" : false, "Message" : "Review Added !"});
+            }
+        });
+    });
+
+    router.post("/requestreview",function(req,res){
+        console.log(req.body);
+        var query = "INSERT INTO product_review_request(product_name,store_name,email,can_help,date_added) VALUES (?,?,?,?,now())";
+        var table = [req.body.product_name,req.body.store_name,req.body.email,req.body.can_help];
+        query = mysql.format(query,table);
+        connection.query(query,function(err,rows){
+            if(err) {
+                console.log(err);
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json({"Error" : false, "Message" : "Review Request Added !"});
+            }
+        });
+    });
+
+    router.post("/subscribe",function(req,res){
+        console.log(req.body);
+        var query = "INSERT INTO subscribers(email,date_added) VALUES (?,now())";
+        var table = [req.body.email];
+        query = mysql.format(query,table);
+        connection.query(query,function(err,rows){
+            if(err) {
+                console.log(err);
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json({"Error" : false, "Message" : "Subscriber Added !"});
+            }
+        });
+    });
+
+
+      router.post("/feedback",function(req,res){
+        console.log(req.body);
+        var query = "INSERT INTO feedback(fname,email,message,date_added) VALUES (?,?,?,now())";
+        var table = [req.body.fname,req.body.email,req.body.message];
+        query = mysql.format(query,table);
+        connection.query(query,function(err,rows){
+            if(err) {
+                console.log(err);
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json({"Error" : false, "Message" : "Feedback Added !"});
+            }
+        });
+    });
+
     // ####################################  RETAILERS  ####################################
 
     router.get("/retailers",function(req,res){
@@ -896,108 +999,6 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
         }
     });
 
-
-    //### others from old services that power the ios app comments will not work as the ios app uses the requests with the term review#########
-
-         router.get("/searchproducts",function(req,res){
-         var query = " select pc.id, concat(b2.b_name,' vs ',b1.b_name) as title1, concat(p2.p_name,' vs ',p1.p_name) as title2, r.r_name from product_comp pc  join products p1 on p1.id=pc.brand_pid join products p2 on p2.id=pc.generic_pid join brands b1 on b1.bid=p1.brand_id join brands b2 on p2.brand_id=b2.bid join retailers r on b2.retail_id=r.id";
-        query = mysql.format(query);
-        connection.query(query,function(err,rows){
-            if(err) {
-                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
-            } else {
-
-                res.json({"Error" : false, "Message" : "Success", "Search_Results" : rows});
-            }
-        });
-    });
-
-    router.get("/products/:product_id",function(req,res){
-        var query = "select  distinct pc.id, b1.b_name as brand_name,b2.b_name as retailer_brand, concat(p1.p_name,' vs ',p2.p_name) as title2,r.r_name,pi.image_link, pc.overall_similarity,pc.ingredient_match,pc.b_review, (select count(pr.id) from product_reviews pr where pr.p_id=pc.id)as review_count from product_comp pc join products p1 on p1.id=pc.brand_pid join products p2 on p2.id=pc.generic_pid join product_images pi on pi.p_id=p2.id and pi.primary_link=1 join brands b1 on b1.bid=p1.brand_id join brands b2 on b2.bid=p2.brand_id join retailers r on b2.retail_id=r.id where pc.id =?";
-        var table = [req.params.product_id];
-        query = mysql.format(query,table);
-        connection.query(query,function(err,rows){
-            if(err) {
-                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
-            } else {
-                res.json({"Error" : false, "Message" : "Success", "product_info" : rows});
-            }
-        });
-    });
-
-     router.get("/reviews/:product_id",function(req,res){
-        var query = " select pr.p_id, pr.uname, pr.review, DATE_FORMAT(date_added,'%m/%d/%Y') from product_reviews pr where p_id=?";
-        var table = [req.params.product_id];
-        query = mysql.format(query,table);
-        connection.query(query,function(err,rows){
-            if(err) {
-                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
-            } else {
-                res.json({"Error" : false, "Message" : "Success", "Reviews" : rows});
-            }
-        });
-    });
-
-    router.post("/review",function(req,res){
-        console.log(req.body);
-        var query = "INSERT INTO product_reviews(p_id,uname,email,review,date_added) VALUES (?,?,?,?,now())";
-        var table = [req.body.pid,req.body.name,req.body.email,req.body.review];
-        query = mysql.format(query,table);
-        connection.query(query,function(err,rows){
-            if(err) {
-                console.log(err);
-                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
-            } else {
-                res.json({"Error" : false, "Message" : "Review Added !"});
-            }
-        });
-    });
-
-    router.post("/requestreview",function(req,res){
-        console.log(req.body);
-        var query = "INSERT INTO product_review_request(product_name,store_name,email,can_help,date_added) VALUES (?,?,?,?,now())";
-        var table = [req.body.product_name,req.body.store_name,req.body.email,req.body.can_help];
-        query = mysql.format(query,table);
-        connection.query(query,function(err,rows){
-            if(err) {
-                console.log(err);
-                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
-            } else {
-                res.json({"Error" : false, "Message" : "Review Request Added !"});
-            }
-        });
-    });
-
-     router.post("/subscribe",function(req,res){
-        console.log(req.body);
-        var query = "INSERT INTO subscribers(email,date_added) VALUES (?,now())";
-        var table = [req.body.email];
-        query = mysql.format(query,table);
-        connection.query(query,function(err,rows){
-            if(err) {
-                console.log(err);
-                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
-            } else {
-                res.json({"Error" : false, "Message" : "Subscriber Added !"});
-            }
-        });
-    });
-
-
-      router.post("/feedback",function(req,res){
-        console.log(req.body);
-        var query = "INSERT INTO feedback(fname,email,message,date_added) VALUES (?,?,?,now())";
-        var table = [req.body.fname,req.body.email,req.body.message];
-        query = mysql.format(query,table);
-        connection.query(query,function(err,rows){
-            if(err) {
-                console.log(err);
-                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
-            } else {
-                res.json({"Error" : false, "Message" : "Feedback Added !"});
-            }
-        });
-    });
 
 
 }
