@@ -97,7 +97,7 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
     });
 
     router.get("/products/:product_id",function(req,res){
-        var query = "select  distinct pc.id, b1.b_name as brand_name,b2.b_name as retailer_brand, concat(p1.p_name,' vs ',p2.p_name) as title2,r.r_name,pi.image_link, pc.overall_similarity,pc.ingredient_match,pc.b_review, (select count(pr.id) from product_reviews pr where pr.p_id=pc.id)as review_count from product_comp pc join products p1 on p1.id=pc.brand_pid join products p2 on p2.id=pc.generic_pid join product_images pi on pi.p_id=p2.id and pi.primary_link=1 join brands b1 on b1.bid=p1.brand_id join brands b2 on b2.bid=p2.brand_id join retailers r on b2.retail_id=r.id where pc.id =?";
+        var query = "select  distinct pc.id, b1.b_name as brand_name,b2.b_name as retailer_brand, concat(p1.p_name,' vs ',p2.p_name) as title2,r.r_name as retailer_name,pi.image_link, pc.overall_similarity,pc.ingredient_match,pc.b_review, (select count(pr.id) from product_reviews pr where pr.p_id=pc.id)as review_count from product_comp pc join products p1 on p1.id=pc.brand_pid join products p2 on p2.id=pc.generic_pid join product_images pi on pi.p_id=p2.id and pi.primary_link=1 join brands b1 on b1.bid=p1.brand_id join brands b2 on b2.bid=p2.brand_id join retailers r on b2.retail_id=r.id where pc.id =?";
         var table = [req.params.product_id];
         query = mysql.format(query,table);
         connection.query(query,function(err,rows){
