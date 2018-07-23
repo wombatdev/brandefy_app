@@ -123,7 +123,7 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
 
     router.post("/review",function(req,res){
         console.log(req.body);
-        var query = "INSERT INTO product_reviews(p_id,u_id,email,review,date_added) VALUES (?,1,?,?,now())";
+        var query = "INSERT INTO product_reviews(p_id,uname,email,review,date_added) VALUES (?,?,?,?,now())";
         var table = [req.body.pid,req.body.name,req.body.email,req.body.review];
         query = mysql.format(query,table);
         connection.query(query,function(err,rows){
