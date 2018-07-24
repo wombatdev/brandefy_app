@@ -88,7 +88,6 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
             if(err) {
                 res.json({"Error" : true, "Message" : "Error executing MySQL query"});
             } else {
-                console.log(rows);
                 res.json({"Error" : false, "Message" : "Success", "Search_Results" : rows});
             }
         });
@@ -110,12 +109,14 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
     router.get("/reviews/:product_id",function(req,res){
         var query = " select pr.p_id, pr.uname, pr.review, DATE_FORMAT(date_added,'%m/%d/%Y') from product_reviews pr where p_id=?";
         var table = [req.params.product_id];
+        console.log(req);
         console.log("req.params.product_id: "+req.params.product_id);
         query = mysql.format(query,table);
         connection.query(query,function(err,rows){
             if(err) {
                 res.json({"Error" : true, "Message" : "Error executing MySQL query"});
             } else {
+                console.log(res);
                 res.json({"Error" : false, "Message" : "Success", "Reviews" : rows});
             }
         });
@@ -419,7 +420,7 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
             }
             if (body.new_actives) {
                 body.new_actives.forEach(function(ing) {
-                    var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${body.id}, ${ing.id}, ${ing.active}, ${ing.conc});`;
+                    var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${body.id}, ${ing.id}, ${ing.active}, '${ing.conc}');`;
                     submitQueryNoResp(query,"product_ingredients", res);
                 });
             }
@@ -431,8 +432,7 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
             }
             if (body.update_actives[0]) {
                 body.update_actives.forEach(function(ing) {
-                    console.log(ing);
-                    var query = `UPDATE product_ingredients SET i_id=${ing.id}, concentration=${ing.conc}, active=${ing.active} WHERE id=${ing.prodIng_id}`;
+                    var query = `UPDATE product_ingredients SET i_id=${ing.id}, concentration='${ing.conc}', active=${ing.active} WHERE id=${ing.prodIng_id}`;
                     submitQueryNoResp(query,"product_ingredients", res);
                 });
             }
@@ -756,7 +756,6 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
             delete req.body.user;
             delete req.body.pw;
             var body = req.body;
-            console.log(body);
             if (body.rel_id) {
                 var query = `UPDATE category_rels SET parent_cid=${body.parent_cid} WHERE id=${body.rel_id}`;
                 submitQueryNoResp(query,"category_rels",res);
