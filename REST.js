@@ -510,28 +510,28 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
                         });
                     }
                     if (body.active1) {
-                        var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${insertId}, ${body.active1.id}, true, ${body.active1.conc});`;
+                        var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${insertId}, ${body.active1.id}, true, '${body.active1.conc}');`;
                         submitQueryNoResp(query,"active product_ingredient",res);
                         if (body.active2) {
-                            var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${insertId}, ${body.active2.id}, true, ${body.active2.conc});`;
+                            var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${insertId}, ${body.active2.id}, true, '${body.active2.conc}');`;
                             submitQueryNoResp(query,"active product_ingredient",res);
                             if (body.active3) {
-                                var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${insertId}, ${body.active3.id}, true, ${body.active3.conc});`;
+                                var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${insertId}, ${body.active3.id}, true, '${body.active3.conc}');`;
                                 submitQueryNoResp(query,"active product_ingredient",res);
                                 if (body.active4) {
-                                    var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${insertId}, ${body.active4.id}, true, ${body.active4.conc});`;
+                                    var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${insertId}, ${body.active4.id}, true, '${body.active4.conc}');`;
                                     submitQueryNoResp(query,"active product_ingredient",res);
                                     if (body.active5) {
-                                        var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${insertId}, ${body.active5.id}, true, ${body.active5.conc});`;
+                                        var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${insertId}, ${body.active5.id}, true, '${body.active5.conc}');`;
                                         submitQueryNoResp(query,"active product_ingredient",res);
                                         if (body.active6) {
-                                            var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${insertId}, ${body.active6.id}, true, ${body.active6.conc});`;
+                                            var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${insertId}, ${body.active6.id}, true, '${body.active6.conc}');`;
                                             submitQueryNoResp(query,"active product_ingredient",res);
                                             if (body.active7) {
-                                                var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${insertId}, ${body.active7.id}, true, ${body.active7.conc});`;
+                                                var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${insertId}, ${body.active7.id}, true, '${body.active7.conc}');`;
                                                 submitQueryNoResp(query,"active product_ingredient",res);
                                                 if (body.active8) {
-                                                    var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${insertId}, ${body.active8.id}, true, ${body.active8.conc});`;
+                                                    var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${insertId}, ${body.active8.id}, true, '${body.active8.conc}');`;
                                                     submitQueryNoResp(query,"active product_ingredient",res);
                                                 }
                                             }
