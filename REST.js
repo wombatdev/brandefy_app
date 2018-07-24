@@ -387,9 +387,14 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
             delete req.body.user;
             delete req.body.pw;
             var body = req.body;
-            if (body.image_link) {
+            if (body.new_image_link) {
                 // hard code primary photo edits for now
-                var query = `UPDATE product_images SET image_link=${body.image_link} WHERE p_id=${body.id} AND primary_link=1;`;
+                var query = `INSERT INTO product_images(p_id, image_link, primary_link) VALUES (${body.id}, ${body.new_image_link}, 1);`;
+                submitQueryNoResp(query,"product_images",res);
+            }
+            if (body.update_image_link) {
+                // hard code primary photo edits for now
+                var query = `UPDATE product_images SET image_link=${body.update_image_link} WHERE p_id=${body.id} AND primary_link=1;`;
                 submitQueryNoResp(query,"product_images",res);
             }
             if (body.prodCat1) {
@@ -543,6 +548,7 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
                         });
                     }
                     if (body.image_link) {
+                        console.log(body.image_link);
                         // hard code primary link
                         var query = `INSERT INTO product_images(p_id, image_link, primary_link) values(${insertId}, ${body.image_link}, 1);`;
                         submitQueryNoResp(query,"product_images",res);
