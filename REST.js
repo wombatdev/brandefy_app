@@ -109,21 +109,17 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
     router.get("/reviews/:product_id",function(req,res){
         var query = " select pr.p_id, pr.uname, pr.review, DATE_FORMAT(date_added,'%m/%d/%Y') as date_added from product_reviews pr where p_id=?";
         var table = [req.params.product_id];
-        console.log(req);
-        console.log("req.params.product_id: "+req.params.product_id);
         query = mysql.format(query,table);
         connection.query(query,function(err,rows){
             if(err) {
                 res.json({"Error" : true, "Message" : "Error executing MySQL query"});
             } else {
-                console.log(res);
                 res.json({"Error" : false, "Message" : "Success", "Reviews" : rows});
             }
         });
     });
 
     router.post("/review",function(req,res){
-        console.log(req.body);
         var query = "INSERT INTO product_reviews(p_id,uname,email,review,date_added) VALUES (?,?,?,?,now())";
         var table = [req.body.pid,req.body.name,req.body.email,req.body.review];
         query = mysql.format(query,table);
@@ -138,7 +134,6 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
     });
 
     router.post("/requestreview",function(req,res){
-        console.log(req.body);
         var query = "INSERT INTO product_review_request(product_name,store_name,email,can_help,date_added) VALUES (?,?,?,?,now())";
         var table = [req.body.product_name,req.body.store_name,req.body.email,req.body.can_help];
         query = mysql.format(query,table);
@@ -153,7 +148,6 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
     });
 
     router.post("/subscribe",function(req,res){
-        console.log(req.body);
         var query = "INSERT INTO subscribers(email,date_added) VALUES (?,now())";
         var table = [req.body.email];
         query = mysql.format(query,table);
@@ -168,7 +162,6 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
     });
 
     router.post("/feedback",function(req,res){
-        console.log(req.body);
         var query = "INSERT INTO feedback(fname,email,message,date_added) VALUES (?,?,?,now())";
         var table = [req.body.fname,req.body.email,req.body.message];
         query = mysql.format(query,table);
@@ -185,7 +178,6 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
     // ####################################  RETAILERS  ####################################
 
     router.get("/retailers",function(req,res){
-        // console.log(req.route.path, Object.keys(req.route.methods));
         var query = " SELECT rb.id,rb.r_name FROM retailers rb ORDER BY rb.id;";
         submitQuery(query,"retailers",res);
     });
@@ -548,7 +540,6 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
                         });
                     }
                     if (body.image_link) {
-                        console.log(body.image_link);
                         // hard code primary link
                         var query = `INSERT INTO product_images(p_id, image_link, primary_link) values(${insertId}, ${body.image_link}, 1);`;
                         submitQueryNoResp(query,"product_images",res);
