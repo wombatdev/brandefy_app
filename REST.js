@@ -413,6 +413,7 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
             if (body.new_actives) {
                 body.new_actives.forEach(function(ing) {
                     var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${body.id}, ${ing.id}, ${ing.active}, '${ing.conc}');`;
+                    console.log(query);
                     submitQueryNoResp(query,"product_ingredients", res);
                 });
             }
@@ -503,6 +504,7 @@ REST_ROUTER.prototype.handleRoutes = function(router,connection,md5) {
                     }
                     if (body.active1) {
                         var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${insertId}, ${body.active1.id}, true, '${body.active1.conc}');`;
+                        console.log(query);
                         submitQueryNoResp(query,"active product_ingredient",res);
                         if (body.active2) {
                             var query = `INSERT INTO product_ingredients(p_id, i_id, active, concentration) values(${insertId}, ${body.active2.id}, true, '${body.active2.conc}');`;
